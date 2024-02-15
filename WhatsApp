@@ -26,8 +26,8 @@ firefox_service = FirefoxService(geckodriver_path)
 navegador = webdriver.Firefox(service=firefox_service, options=firefox_options)
 navegador.get("https://web.whatsapp.com/")
 
-# Escanear o QR code (Aguarde o processo manual)
-input("Aguarde até escanear o QR Code e pressione Enter para continuar...")
+# Escanear o QR code 
+input("Aguarde até escanear o QR Code manualmente e pressione Enter para continuar")
 
 # Aguardar até que o elemento com ID "side" seja visível
 try:
@@ -55,7 +55,7 @@ for i, mensagem in enumerate(contatos_df['Mensagem']):
 
         # Anexar a planilha
         try:
-            anexo_path = "C:/Users/jhonata.teixeira/Downloads/Controle_financeiro.xlsx"  # Substitua pelo caminho real do seu arquivo
+            anexo_path = "C:/seu/local/para/Teste2.xlsx"  
 
             # Localizar o botão de anexar
             clip_button = WebDriverWait(navegador, 20).until(EC.element_to_be_clickable((By.XPATH, '//input[@accept="image/*,video/mp4,video/3gpp,video/quicktime"]')))
@@ -75,10 +75,10 @@ for i, mensagem in enumerate(contatos_df['Mensagem']):
         except Exception as e:
             print(f"Erro ao enviar a mensagem: {e}")
 
-# Aguardar antes de fechar o navegador
+# Fechar o navegador (Ajustável e eliminável)
 #time.sleep(5)
 
-# Fechar o navegador
+# Fechar o navegador (Eliminável)
 #navegador.quit()
 
 
