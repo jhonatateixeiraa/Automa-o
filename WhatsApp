@@ -1,0 +1,88 @@
+# Primeiro é   p  reciso definir o navegador a ser utilizado e baixar o "driver" correto e atualizado. 
+# Aqui utilizaremos o Firefox, pois a ultima versão do driver para o Chrome não está atualizada. 
+
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import time
+import urllib
+import pandas as pd
+
+contatos_df = pd.read_excel("C:/seu/local/para/Teste.xlsx")
+
+# Executar o GeckoDriver
+geckodriver_path = r'C:\seu\local\para\geckodriver-v0.34.0-win64\geckodriver.exe'
+
+# Configurar o navegador (Firefox)
+firefox_options = Options()
+# Adicione mais opções conforme necessário
+
+# Criar uma instância do navegador Firefox
+firefox_service = FirefoxService(geckodriver_path)
+navegador = webdriver.Firefox(service=firefox_service, options=firefox_options)
+navegador.get("https://web.whatsapp.com/")
+
+# Escanear o QR code (Aguarde o processo manual)
+input("Aguarde até escanear o QR Code e pressione Enter para continuar...")
+
+# Aguardar até que o elemento com ID "side" seja visível
+try:
+    WebDriverWait(navegador, 20).until(EC.presence_of_element_located((By.ID, "side")))
+except Exception as e:
+    print(f"Erro ao aguardar a presença do elemento: {e}")
+
+# "Escrever" a mensagem automaticamente
+for i, mensagem in enumerate(contatos_df['Mensagem']):
+    pessoa = contatos_df.loc[i, "Pessoa"]
+    numero = contatos_df.loc[i, "Número"]
+
+    # Verifica se o número não é NaN (Elimina o .0 ao final fdo número)
+    if pd.notna(numero):
+        numero = str(int(numero))
+        texto = urllib.parse.quote(f"Oi {pessoa}! {mensagem}")
+        link = f"https://web.whatsapp.com/send?phone={numero}&text={texto}"
+        navegador.get(link)
+
+        # Aguardar até que o elemento com ID "side" seja visível
+        try:
+            WebDriverWait(navegador, 20).until(EC.presence_of_element_located((By.ID, "side")))
+        except Exception as e:
+            print(f"Erro ao aguardar a presença do elemento: {e}")
+
+        # Anexar a planilha
+        try:
+            anexo_path = "C:/Users/jhonata.teixeira/Downloads/Controle_financeiro.xlsx"  # Substitua pelo caminho real do seu arquivo
+
+            # Localizar o botão de anexar
+            clip_button = WebDriverWait(navegador, 20).until(EC.element_to_be_clickable((By.XPATH, '//input[@accept="image/*,video/mp4,video/3gpp,video/quicktime"]')))
+
+            # Anexar o arquivo
+            clip_button.send_keys(anexo_path)
+
+            # Tempo suficiente para o upload (Asjustável) 
+            time.sleep(10)
+
+            # Enviar a mensagem
+            send_button = WebDriverWait(navegador, 10).until(EC.element_to_be_clickable((By.XPATH, '//span[@data-testid="send"]')))
+            send_button.click()
+
+            # Tempo necessário para a próxima mensagem (Ajustável)
+            time.sleep(20)
+        except Exception as e:
+            print(f"Erro ao enviar a mensagem: {e}")
+
+# Aguardar antes de fechar o navegador
+#time.sleep(5)
+
+# Fechar o navegador
+#navegador.quit()
+
+
+
+# Importante lembrar que o WPP fez atualizações no botões e o driver pode não conseguir localizar ao caminho para anexar o docmuneto, sendo necessario mais detalhamentos. 
+# PS: o wpp detesta processos automatizados e o uso exagerado pode acabar levando ao bloqueio do número. 
+
